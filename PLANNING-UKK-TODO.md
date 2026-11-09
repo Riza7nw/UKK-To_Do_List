@@ -1,6 +1,8 @@
 # Planning Website To-Do List — UKK
 ### HTML + CSS + JavaScript + Firebase
 
+> ⚠️ **Catatan revisi:** struktur final database memakai **subcollection** `users/{uid}/tasks` (bukan collection `tasks` gabungan), ditambah paginasi 5 tugas per halaman dan dropdown Urutkan. Penjelasan & kode terbaru ada di **BELAJAR-KODE.md** dan file `js/app.js` / `firestore.rules`.
+
 > Target: sederhana, rapi, fiturnya cukup lengkap, logikanya mudah dijelaskan ke penguji.
 > Tidak perlu XAMPP atau PHP. Semua kode ada di frontend, database & login ditangani Firebase.
 

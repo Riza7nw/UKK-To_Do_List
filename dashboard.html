@@ -6,7 +6,7 @@
   <title>Dashboard — TugasKu</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="memuat">
@@ -22,32 +22,32 @@
 
   <main class="container app">
 
-    <!-- STATISTIK -->
-    <section class="stats">
-      <div class="stat-card">
-        <span class="stat-label">Total Tugas</span>
-        <span id="statTotal" class="stat-angka">0</span>
+    <!-- RINGKASAN: progres + statistik -->
+    <section class="ringkasan">
+      <div class="ringkasan-progres">
+        <p class="ringkasan-judul">Progres tugasmu</p>
+        <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+        <strong id="persenText" class="persen">0%</strong>
       </div>
-      <div class="stat-card hijau">
-        <span class="stat-label">Selesai</span>
-        <span id="statSelesai" class="stat-angka">0</span>
-      </div>
-      <div class="stat-card kuning">
-        <span class="stat-label">Belum Selesai</span>
-        <span id="statBelum" class="stat-angka">0</span>
-      </div>
-      <div class="stat-card merah">
-        <span class="stat-label">Terlambat</span>
-        <span id="statTerlambat" class="stat-angka">0</span>
-      </div>
-    </section>
 
-    <section class="card progress-card">
-      <div class="progress-info">
-        <span>Progres penyelesaian</span>
-        <strong id="persenText">0%</strong>
-      </div>
-      <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+      <dl class="stats">
+        <div class="stat">
+          <dt>Total</dt>
+          <dd id="statTotal">0</dd>
+        </div>
+        <div class="stat stat-selesai">
+          <dt>Selesai</dt>
+          <dd id="statSelesai">0</dd>
+        </div>
+        <div class="stat stat-belum">
+          <dt>Belum selesai</dt>
+          <dd id="statBelum">0</dd>
+        </div>
+        <div class="stat stat-terlambat">
+          <dt>Terlambat</dt>
+          <dd id="statTerlambat">0</dd>
+        </div>
+      </dl>
     </section>
 
     <div class="grid-utama">
@@ -105,6 +105,7 @@
             <option value="semua">Semua status</option>
             <option value="belum">Belum selesai</option>
             <option value="selesai">Selesai</option>
+            <option value="sampah" id="opsiSampah">🗑 Sampah</option>
           </select>
           <select id="filterKategori">
             <option value="semua">Semua kategori</option>
@@ -113,11 +114,19 @@
             <option value="Kerja">Kerja</option>
             <option value="Lainnya">Lainnya</option>
           </select>
+          <select id="urutkan">
+            <option value="deadline">Urut: Deadline</option>
+            <option value="terbaru">Urut: Terbaru</option>
+            <option value="terlama">Urut: Terlama</option>
+            <option value="prioritas">Urut: Prioritas</option>
+          </select>
         </div>
 
         <div id="daftarTugas" class="daftar-tugas">
           <p class="kosong">Memuat tugas...</p>
         </div>
+
+        <div id="paginasi" class="paginasi"></div>
       </section>
 
     </div>
