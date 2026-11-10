@@ -1,0 +1,8 @@
+# File yang tidak perlu ikut di website publik
+.claude
+BELAJAR-KODE.md
+BELAJAR-KODE.pdf
+PLANNING-UKK-TODO.md
+firestore.rules
+.env*
+.vercel
