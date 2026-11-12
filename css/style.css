@@ -172,7 +172,8 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
 
 .topbar {
   display: flex; justify-content: space-between; align-items: center;
-  margin: 16px auto 0; max-width: 1120px; width: calc(100% - 48px);
+  /* lebar sama dengan isi .container (1120px dikurangi padding 24px kiri-kanan) */
+  margin: 16px auto 0; max-width: calc(1120px - 48px); width: calc(100% - 48px);
   padding: 12px 20px; border-radius: var(--radius-besar);
   position: sticky; top: 16px; z-index: 10;
 }
