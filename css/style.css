@@ -286,6 +286,19 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
   100% { transform: scale(1); }
 }
 
+/* ---------- Tugas bisa diklik untuk mulai dikerjakan ---------- */
+.tugas-isi.bisa-diklik { cursor: pointer; border-radius: 6px; }
+.tugas-isi.bisa-diklik:hover h3 { color: var(--tinta); }
+
+/* ---------- Tugas sedang dikerjakan ---------- */
+.tugas.dikerjakan { background: #f2f6ff; }
+.tugas.dikerjakan:hover { background: #ecf2ff; }
+.tugas.dikerjakan .cek { border-color: var(--tinta); border-style: dashed; }
+.badge.progres { background: var(--tinta); color: #fff; padding: 1px 7px; border-radius: 3px; }
+
+.btn-selesai { background: var(--hijau); color: #fff; }
+.btn-selesai:hover { background: #116632; }
+
 /* ---------- Tugas di sampah ---------- */
 .tugas.dihapus { background: repeating-linear-gradient(135deg, transparent 0 10px, #f8fafc 10px 20px); }
 .tugas.dihapus h3 { color: var(--teks-pudar); }

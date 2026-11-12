@@ -188,6 +188,7 @@ async function tambahTugasBernomor(data) {
     // 5. Simpan tugas dengan ID "0001"
     data.nomor = nomorBaru;
     data.selesai = false;
+    data.dikerjakan = false;
     data.createdAt = serverTimestamp();
     tx.set(dokumenTugas(idTugas), data);
   });
@@ -288,17 +289,57 @@ function diSampah(t) {
 }
 
 // =========================================================
-// 6. TOGGLE SELESAI / BELUM
+// 6. STATUS TUGAS: Belum → Sedang dikerjakan → Selesai
 // =========================================================
+
+// Centang di kiri: langsung selesai / batal selesai
 async function toggleSelesai(id, statusSekarang) {
   try {
     await updateDoc(dokumenTugas(id), {
       selesai: !statusSekarang,   // ! membalik: true jadi false, false jadi true
+      dikerjakan: false,          // tugas selesai / dibuka lagi → tidak lagi "sedang dikerjakan"
       updatedAt: serverTimestamp()
     });
   } catch (err) {
     tampilkanToast("Gagal mengubah status: " + err.message, true);
   }
+}
+
+// Klik tugas: mulai dikerjakan / batal dikerjakan
+async function toggleDikerjakan(id, statusSekarang) {
+  try {
+    await updateDoc(dokumenTugas(id), {
+      dikerjakan: !statusSekarang,
+      updatedAt: serverTimestamp()
+    });
+
+    if (statusSekarang) {
+      tampilkanToast("Batal dikerjakan");
+    } else {
+      tampilkanToast("Tugas sedang dikerjakan ⏳ Klik Selesai jika sudah beres");
+    }
+  } catch (err) {
+    tampilkanToast("Gagal mengubah status: " + err.message, true);
+  }
+}
+
+// Tombol "Selesai" pada tugas yang sedang dikerjakan
+async function tandaiSelesai(id) {
+  try {
+    await updateDoc(dokumenTugas(id), {
+      selesai: true,
+      dikerjakan: false,
+      updatedAt: serverTimestamp()
+    });
+    tampilkanToast("Tugas selesai ✅");
+  } catch (err) {
+    tampilkanToast("Gagal menyimpan: " + err.message, true);
+  }
+}
+
+// Cek apakah tugas sedang dikerjakan (tugas lama tanpa field "dikerjakan" dianggap tidak)
+function sedangDikerjakan(t) {
+  return t.dikerjakan === true && t.selesai === false;
 }
 
 // =========================================================
@@ -334,6 +375,9 @@ function lolosFilter(t) {
   if (filterStatus.value === "belum" && t.selesai === true) {
     return false;
   }
+  if (filterStatus.value === "dikerjakan" && !sedangDikerjakan(t)) {
+    return false;
+  }
 
   // 4. Filter kategori
   if (filterKategori.value !== "semua" && t.kategori !== filterKategori.value) {
@@ -354,7 +398,16 @@ function bandingkan(a, b) {
     }
   }
 
-  // 2. Sesuai pilihan "Urutkan"
+  // 2. Tugas yang sedang dikerjakan di atas tugas lain yang belum selesai
+  if (sedangDikerjakan(a) !== sedangDikerjakan(b)) {
+    if (sedangDikerjakan(a)) {
+      return -1;
+    } else {
+      return 1;
+    }
+  }
+
+  // 3. Sesuai pilihan "Urutkan"
   let selisih = 0;
   if (urutkan.value === "terbaru") {
     selisih = b.dibuat - a.dibuat;
@@ -370,7 +423,7 @@ function bandingkan(a, b) {
     return selisih;
   }
 
-  // 3. Jika masih seri → yang dibuat duluan di atas
+  // 4. Jika masih seri → yang dibuat duluan di atas
   return a.dibuat - b.dibuat;
 }
 
@@ -515,6 +568,9 @@ function buatItemTugas(t) {
   if (diSampah(t)) {
     kelasKartu = kelasKartu + " dihapus";
   }
+  if (sedangDikerjakan(t)) {
+    kelasKartu = kelasKartu + " dikerjakan";
+  }
   const item = buatElemen("div", kelasKartu, "");
 
   // Tombol centang
@@ -535,8 +591,30 @@ function buatItemTugas(t) {
     isi.appendChild(buatElemen("p", "desk", t.deskripsi));
   }
 
+  // Tugas yang belum selesai (dan tidak di sampah) bisa diklik untuk mulai/batal dikerjakan
+  if (!t.selesai && !diSampah(t)) {
+    isi.classList.add("bisa-diklik");
+    isi.tabIndex = 0;                         // bisa dipilih dengan tombol Tab
+    isi.setAttribute("role", "button");
+    if (sedangDikerjakan(t)) {
+      isi.title = "Klik untuk batal mengerjakan";
+    } else {
+      isi.title = "Klik untuk mulai mengerjakan";
+    }
+
+    isi.addEventListener("click", () => toggleDikerjakan(t.id, sedangDikerjakan(t)));
+    isi.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        toggleDikerjakan(t.id, sedangDikerjakan(t));
+      }
+    });
+  }
+
   // Badge
   const badges = buatElemen("div", "badges", "");
+  if (sedangDikerjakan(t)) {
+    badges.appendChild(buatBadge("⏳ Sedang dikerjakan", "progres"));
+  }
   if (cekTerlambat(t)) {
     badges.appendChild(buatBadge("⚠ Terlambat", "merah"));
   } else if (!t.selesai && t.deadline === hariIni) {
@@ -566,6 +644,13 @@ function buatItemTugas(t) {
     aksi.appendChild(btnPulihkan);
     aksi.appendChild(btnPermanen);
   } else {
+    // Tugas yang sedang dikerjakan: ada tombol "Selesai"
+    if (sedangDikerjakan(t)) {
+      const btnSelesai = buatElemen("button", "btn-kecil btn-selesai", "Selesai");
+      btnSelesai.addEventListener("click", () => tandaiSelesai(t.id));
+      aksi.appendChild(btnSelesai);
+    }
+
     // Tugas biasa: Edit & Hapus (pindah ke sampah)
     const btnEdit = buatElemen("button", "btn-kecil btn-edit", "Edit");
     btnEdit.addEventListener("click", () => mulaiEdit(t.id));

@@ -433,14 +433,26 @@ Tugas yang terhapus tidak langsung hilang, tapi masuk **🗑 Sampah** dulu — s
 - Hanya **Hapus Permanen** yang memakai `confirm()`, karena hanya aksi itu yang tidak bisa dibatalkan.
 - Istilah ini disebut **soft delete** (hapus lunak) vs **hard delete** (hapus permanen).
 
-### Bagian 6 — Toggle selesai
+### Bagian 6 — Status tugas: Belum → Sedang dikerjakan → Selesai
+Setiap tugas punya dua field status: `selesai` dan `dikerjakan` (keduanya `true` / `false`).
+
+| Aksi pengguna | Fungsi | Yang disimpan di Firestore |
+|---|---|---|
+| **Klik judul/deskripsi tugas** (atau tekan Enter) | `toggleDikerjakan(id, statusSekarang)` | `dikerjakan: !statusSekarang` → mulai / batal dikerjakan |
+| Klik tombol hijau **Selesai** (muncul saat sedang dikerjakan) | `tandaiSelesai(id)` | `selesai: true`, `dikerjakan: false` |
+| Klik **kotak centang** di kiri | `toggleSelesai(id, statusSekarang)` | `selesai: !statusSekarang`, `dikerjakan: false` |
+
 ```js
 await updateDoc(dokumenTugas(id), {
-  selesai: !statusSekarang,
+  selesai: !statusSekarang,   // ! membalik: false → true, true → false
+  dikerjakan: false,
   updatedAt: serverTimestamp()
 });
 ```
-`!` membalik: `false → true` (jadi selesai), `true → false` (batal selesai).
+- `sedangDikerjakan(t)` → `return t.dikerjakan === true && t.selesai === false;`. Tugas lama tanpa field `dikerjakan` dianggap tidak sedang dikerjakan.
+- Tugas yang sedang dikerjakan: latar biru muda, badge **"⏳ Sedang dikerjakan"**, kotak centang bergaris putus-putus, dan ada tombol **Selesai**.
+- Tugas yang sudah selesai atau ada di sampah **tidak bisa diklik** untuk dikerjakan.
+- Agar bisa dipakai dengan keyboard, area tugas diberi `tabIndex = 0` dan `role="button"`, dan tombol **Enter** menjalankan fungsi yang sama dengan klik.
 
 ### Bagian 7 — Cari + filter + urutkan
 ```js
@@ -453,18 +465,19 @@ function ambilTugasTerfilter() {
 **`lolosFilter(t)`** — mengembalikan `true` jika tugas boleh tampil. Dicek satu per satu, begitu ada yang tidak cocok langsung `return false`:
 1. Judul tidak mengandung kata cari → `false` (`toLowerCase` agar huruf besar/kecil tidak berpengaruh).
 2. Sampah: jika dropdown = "Sampah" → tampilkan **hanya** tugas di sampah (`return diSampah(t)`). Selain itu, tugas di sampah selalu disembunyikan.
-3. Filter "selesai" tapi tugas belum selesai → `false`. Filter "belum" tapi tugas sudah selesai → `false`.
+3. Filter "selesai" tapi tugas belum selesai → `false`. Filter "belum" tapi tugas sudah selesai → `false`. Filter "Sedang dikerjakan" tapi `sedangDikerjakan(t)` bernilai `false` → `false`.
 4. Filter kategori bukan "semua" dan kategori tugas berbeda → `false`.
 5. Lolos semua → `true`.
 
 **`bandingkan(a, b)`** — hasil negatif = `a` di atas, positif = `b` di atas:
 1. Tugas belum selesai **selalu** di atas tugas selesai.
-2. Sesuai dropdown **Urutkan** (pakai `if / else if`):
+2. Tugas yang **sedang dikerjakan** di atas tugas lain yang belum selesai.
+3. Sesuai dropdown **Urutkan** (pakai `if / else if`):
    - *Terbaru* → `b.dibuat - a.dibuat` (yang baru dibuat di atas).
    - *Terlama* → `a.dibuat - b.dibuat`.
    - *Prioritas* → `NILAI_PRIORITAS[a.prioritas] - NILAI_PRIORITAS[b.prioritas]`, angka kecil di atas.
    - *Deadline* → `bandingkanDeadline(a, b)`: deadline terdekat dulu; tugas tanpa deadline dianggap `"9999-12-31"` sehingga paling bawah.
-3. Jika hasilnya 0 (seri) → urut sesuai **waktu dibuat**.
+4. Jika hasilnya 0 (seri) → urut sesuai **waktu dibuat**.
 
 > 🐞 **Cerita bug (bagus diceritakan ke penguji):** versi awal hanya mengurutkan berdasarkan deadline. Saat semua tugas tidak punya deadline, nilainya sama semua, sehingga urutannya mengikuti ID acak Firestore → tampil acak (7, 6, 8, 1, 3...). Solusinya: tambah aturan ke-3, *jika seri, urutkan berdasarkan waktu dibuat*.
 
@@ -620,6 +633,7 @@ Contoh untuk toggle:
 | 24 | Kenapa ada fungsi bantu seperti `buatElemen`, `aturModeForm`, `setLoading`? | Prinsip DRY (Don't Repeat Yourself): kode yang sama ditulis sekali sebagai fungsi, lalu dipakai berulang → tidak perlu menulis ulang & mudah diperbaiki |
 | 25 | Bagaimana fitur Sampah bekerja? | Soft delete: Hapus hanya mengubah field `dihapus: true` (data tetap di Firestore). Pulihkan → `dihapus: false`. Hapus Permanen → `deleteDoc` (data hilang) |
 | 26 | Bagaimana fitur Lupa password bekerja? | `sendPasswordResetEmail` → Firebase mengirim link reset ke email; pengguna membuat password baru lewat link itu. Password lama tidak pernah bisa dilihat karena disimpan dalam bentuk hash |
+| 27 | Bagaimana status "Sedang dikerjakan" bekerja? | Klik tugas → `toggleDikerjakan` menyimpan `dikerjakan: true`. Tombol Selesai → `tandaiSelesai` menyimpan `selesai: true, dikerjakan: false`. Tugas yang sedang dikerjakan selalu tampil paling atas |
 
 ### 9.4 Ujian terakhir: ketik ulang dari nol
 Di folder baru, coba ketik ulang **`app.js` bagian 3–6** (read, create/update, delete, toggle) tanpa melihat. Jika macet, lihat panduan ini (bukan kodenya), lalu coba lagi. Lakukan sampai lancar — ini bekal jika penguji meminta membuat fitur di tempat.
