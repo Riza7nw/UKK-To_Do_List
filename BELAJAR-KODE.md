@@ -12,7 +12,7 @@
 | 1 | 0 – 1 | Gambaran besar + dasar JavaScript yang dipakai | 1,5 jam |
 | 2 | 2 – 3 | HTML & CSS | 1,5 jam |
 | 3 | 4 – 5 | `firebase.js` + `auth.js` (login & register) | 1,5 jam |
-| 4 | 6 (bagian 1–6) | `app.js`: cek login, logout, CRUD, toggle | 2 jam |
+| 4 | 6 (bagian 1–6) | `app.js`: cek login, logout, CRUD, sampah, status tugas | 2 jam |
 | 5 | 6 (bagian 7–10) + 7 | `app.js`: filter, statistik, render + Security Rules | 2 jam |
 | 6 | 8 | Latihan modifikasi kode (uji pemahaman) | 2 jam |
 | 7 | 9 | Latihan presentasi + kuis + ketik ulang dari nol | 2 jam |
@@ -34,8 +34,12 @@ todolist/
 ├── js/firebase.js    → koneksi ke Firebase
 ├── js/auth.js        → logika login & daftar
 ├── js/app.js         → logika dashboard
-└── firestore.rules   → aturan keamanan database
+├── firestore.rules   → aturan keamanan database
+├── README.md         → penjelasan proyek untuk GitHub
+└── .vercelignore     → daftar file yang tidak ikut diunggah ke Vercel
 ```
+
+Website sudah online di **https://tugasku-ukk.vercel.app** (hosting Vercel), dan kodenya ada di GitHub `Riza7nw/UKK-To_Do_List`.
 
 ### 0.2 Pembagian tugas tiga bahasa
 
@@ -50,6 +54,7 @@ todolist/
 
 ```
  [index.html]  --belum punya akun-->  [register.html]
+      |   \--lupa password--> email reset dari Firebase
       |                                     |
    login berhasil                     daftar berhasil
       |                                     |
@@ -59,13 +64,17 @@ todolist/
                               | ya
                    ambil tugas dari Firestore (realtime)
                               |
-          tambah / edit / hapus / centang / cari / filter
+          tambah / edit / cari / filter / urutkan / pindah halaman
+                              |
+          klik tugas → Sedang dikerjakan → tombol Selesai → ✓ selesai
+                              |
+          Hapus → Sampah → Pulihkan  atau  Hapus Permanen
                               |
                      tombol Keluar → signOut → index.html
 ```
 
 ### 0.4 Kalimat ringkas untuk penguji (hafalkan)
-> *"Aplikasi saya terdiri dari 3 halaman: login, daftar, dan dashboard. HTML untuk struktur, CSS untuk tampilan, JavaScript untuk logika. Data disimpan di Cloud Firestore, dan akun dikelola Firebase Authentication. Di dashboard user bisa menambah, melihat, mengedit, menghapus, dan menandai tugas selesai, serta mencari, memfilter, dan melihat statistik."*
+> *"Aplikasi saya terdiri dari 3 halaman: login, daftar, dan dashboard. HTML untuk struktur, CSS untuk tampilan, JavaScript untuk logika. Data disimpan di Cloud Firestore, dan akun dikelola Firebase Authentication. Di dashboard user bisa menambah, melihat, mengedit, dan menghapus tugas. Tugas yang sedang dikerjakan bisa ditandai lalu diselesaikan, tugas yang terhapus masuk Sampah dan bisa dipulihkan, ada pencarian, filter, urutan, paginasi, dan statistik. Di halaman login juga ada fitur lupa password. Tampilannya bergaya glassmorphism dan website-nya sudah online di Vercel."*
 
 ✅ **Cek paham:** Bisakah kamu menggambar alur 0.3 tanpa melihat?
 
@@ -150,7 +159,8 @@ Karena memakai import/export, di HTML ditulis `<script type="module">` dan harus
 Baca filenya, perhatikan:
 - `<head>`: `meta viewport` (agar pas di HP), link Google Font **Plus Jakarta Sans** (font buatan studio Indonesia, Tokotype), link `css/style.css`.
 - `<form id="formLogin">` berisi input `email` dan `password` dengan atribut `required` (tidak boleh kosong).
-- `<p id="pesan">` → tempat menampilkan pesan error dari JavaScript.
+- `<button type="button" id="btnLupa">` → tombol **Lupa password?**. `type="button"` supaya tidak ikut men-submit form login.
+- `<p id="pesan">` → tempat menampilkan pesan error (merah) atau sukses (hijau) dari JavaScript.
 - `<script type="module" src="js/auth.js">` → menghubungkan ke logika login.
 
 ### 2.2 `register.html`
@@ -162,7 +172,7 @@ Bagi menjadi 5 blok:
 1. **Header** — logo, `#sapaan` ("Halo, nama"), tombol `#btnLogout`.
 2. **Ringkasan** `.ringkasan` — progress bar `#progressBar` + persen `#persenText`, lalu 4 angka statistik `statTotal`, `statSelesai`, `statBelum`, `statTerlambat` dalam `<dl>` (daftar istilah: `<dt>` = nama, `<dd>` = nilainya).
 3. **Form tugas** `#formTugas` — judul, deskripsi, prioritas, kategori, deadline, tombol `#btnSimpan` & `#btnBatal`.
-4. **Toolbar** — `#inputCari`, `#filterStatus`, `#filterKategori`, `#urutkan`.
+4. **Toolbar** — `#inputCari`, `#filterStatus`, `#filterKategori`, `#urutkan`. Pilihan `#filterStatus`: Semua, Belum selesai, Selesai, **Sedang dikerjakan**, dan **🗑 Sampah** (`#opsiSampah`, jumlah isinya diisi JS).
 5. **Daftar** `#daftarTugas` dan **paginasi** `#paginasi` — **kosong di HTML**, diisi oleh JavaScript.
 
 Lalu `#toast` (kotak notifikasi) dan `<script type="module" src="js/app.js">`.
@@ -589,6 +599,7 @@ Kerjakan satu per satu. Jika bisa, berarti kamu paham alurnya. (Lakukan di **sal
 | 5 | Tampilkan jumlah tugas prioritas tinggi di console | bagian 8: `semuaTugas.filter(t => t.prioritas === "tinggi").length` |
 | 6 | Tombol "Hapus semua yang selesai" | loop `semuaTugas.filter(t => t.selesai)` → `deleteDoc` setiap id |
 | 7 | Badge "Besok" untuk deadline besok | bagian 9, hitung tanggal besok seperti `hariIni` |
+| 8 | Tombol "Kosongkan Sampah" | bagian 5: loop `semuaTugas.filter(diSampah)` → `deleteDoc` setiap id, pakai `confirm()` dulu |
 
 Penguji sering meminta **mengubah sedikit kode secara langsung**, jadi latihan ini sangat penting.
 
@@ -597,19 +608,21 @@ Penguji sering meminta **mengubah sedikit kode secara langsung**, jadi latihan i
 ## TAHAP 9 — Persiapan Presentasi
 
 ### 9.1 Urutan demo (± 5 menit)
-1. **Perkenalan** (30 detik): kalimat di Tahap 0.4.
+1. **Perkenalan** (30 detik): kalimat di Tahap 0.4. Buka website dari link Vercel.
 2. **Struktur folder** (30 detik): tunjukkan 3 HTML, 1 CSS, 3 JS, rules.
 3. **Demo register** → tunjukkan user baru di Firebase Authentication & `users`.
-4. **Demo login** salah lalu benar → tunjukkan pesan error.
-5. **Demo CRUD:** tambah 2 tugas → buka Firestore tunjukkan dokumennya → edit → centang selesai (statistik berubah) → hapus.
-6. **Demo cari & filter.**
-7. **Demo keamanan:** buka `dashboard.html` setelah logout → terlempar ke login; ketik `<script>alert(1)</script>` sebagai judul → tampil sebagai teks.
-8. **Jelaskan kode** bila diminta: mulai dari `firebase.js` → `auth.js` → `app.js` bagian 1 sampai 10.
+4. **Demo login** salah lalu benar → tunjukkan pesan error. Sebutkan juga tombol **Lupa password?**.
+5. **Demo CRUD:** tambah 2 tugas → buka Firestore tunjukkan dokumennya (ID `0001`, `0002`) → edit.
+6. **Demo status:** klik tugas → "Sedang dikerjakan" (naik ke atas) → tombol **Selesai** → kotak tercentang, statistik berubah.
+7. **Demo Sampah:** hapus tugas → buka filter 🗑 Sampah → **Pulihkan**; hapus lagi → **Hapus Permanen** → tunjukkan dokumennya hilang di Firestore.
+8. **Demo cari, filter, urutkan, dan paginasi.**
+9. **Demo keamanan:** buka `dashboard.html` setelah logout → terlempar ke login; ketik `<script>alert(1)</script>` sebagai judul → tampil sebagai teks.
+10. **Jelaskan kode** bila diminta: mulai dari `firebase.js` → `auth.js` → `app.js` bagian 1 sampai 10.
 
 ### 9.2 Teknik menjelaskan kode (rumus 3 langkah)
 Untuk setiap bagian, jawab: **"Ini untuk apa → bagaimana caranya → hasilnya apa."**
-Contoh untuk toggle:
-> *"Ini untuk menandai tugas selesai. Caranya memakai `updateDoc` ke dokumen tugas, field `selesai` diisi kebalikan nilai sekarang dengan tanda `!`. Hasilnya data di Firestore berubah, `onSnapshot` mendeteksi, dan tampilan otomatis diperbarui — judul jadi tercoret."*
+Contoh untuk tombol Selesai:
+> *"Ini untuk menandai tugas yang sedang dikerjakan sebagai selesai. Caranya fungsi `tandaiSelesai` memakai `updateDoc` ke dokumen tugas, mengisi `selesai: true` dan `dikerjakan: false`. Hasilnya data di Firestore berubah, `onSnapshot` mendeteksi, dan tampilan otomatis diperbarui — kotak tercentang dan judul dicoret."*
 
 ### 9.3 Kuis mandiri (tutup jawaban, jawab lisan)
 
@@ -618,7 +631,7 @@ Contoh untuk toggle:
 | 1 | Sebutkan bahasa yang dipakai & fungsinya | HTML struktur, CSS tampilan, JS logika; Firestore database |
 | 2 | Firestore SQL atau NoSQL? | NoSQL — collection, document, field |
 | 3 | Struktur database? | `users/{uid}` (profil) dan subcollection `users/{uid}/tasks` (tugas milik user itu) |
-| 4 | Field di tugas? | nomor, judul, deskripsi, prioritas, kategori, deadline, selesai, dihapus, dihapusPada, createdAt, updatedAt (ID dokumen: 0001, 0002, ...) |
+| 4 | Field di tugas? | nomor, judul, deskripsi, prioritas, kategori, deadline, selesai, dikerjakan, dihapus, dihapusPada, createdAt, updatedAt (ID dokumen: 0001, 0002, ...) |
 | 5 | Penghubung user dan tugas? | Tugas disimpan di dalam dokumen user-nya (subcollection) → one-to-many, rapi per akun |
 | 6 | Fungsi CRUD Firestore yang dipakai? | Create `runTransaction` + `tx.set`, Read `onSnapshot`/`getDoc`, Update `updateDoc`, Delete `deleteDoc` |
 | 7 | Cara mencegah user belum login masuk dashboard? | `onAuthStateChanged`; jika user null → redirect ke index.html |
@@ -626,11 +639,11 @@ Contoh untuk toggle:
 | 9 | Fungsi `try/catch`? | Menangkap error agar aplikasi tidak berhenti & bisa tampilkan pesan |
 | 10 | Apa itu `onSnapshot`? | Pendengar realtime; tampilan otomatis update saat data berubah |
 | 11 | Bagaimana tambah & edit pakai satu form? | Variabel `editId`: null = tambah (`tambahTugasBernomor`), ada isi = edit (`updateDoc`); tampilan form diatur `aturModeForm` |
-| 12 | Bagaimana cari & filter bekerja? | `.filter()` berantai pada array `semuaTugas`, lalu `render()` |
+| 12 | Bagaimana cari & filter bekerja? | `semuaTugas.filter(lolosFilter)`: fungsi `lolosFilter` mengecek kata cari, sampah, status, dan kategori satu per satu; lalu `sort(bandingkan)` dan `render()` |
 | 13 | Bagaimana menghitung terlambat? | belum selesai && ada deadline && deadline < hariIni |
 | 14 | Bagaimana mencegah XSS? | Menampilkan data user dengan `textContent` |
 | 15 | Bagaimana data user lain aman? | Tugas di path `users/{uid}/tasks` + Security Rules memastikan hanya pemilik uid yang boleh akses |
-| 16 | Kenapa harus Live Server? | `type="module"` tidak bisa jalan dari file:// (diblokir browser) |
+| 16 | Kenapa harus Live Server? | `type="module"` tidak bisa jalan dari file:// (diblokir browser). Versi online di Vercel sudah otomatis lewat server |
 | 17 | Fungsi `e.preventDefault()`? | Mencegah form me-reload halaman |
 | 18 | Fungsi media query? | Menyesuaikan tampilan untuk layar HP |
 | 19 | Kekurangan Firebase? | Butuh internet; bergantung pada layanan Google |
@@ -642,6 +655,10 @@ Contoh untuk toggle:
 | 25 | Bagaimana fitur Sampah bekerja? | Soft delete: Hapus hanya mengubah field `dihapus: true` (data tetap di Firestore). Pulihkan → `dihapus: false`. Hapus Permanen → `deleteDoc` (data hilang) |
 | 26 | Bagaimana fitur Lupa password bekerja? | `sendPasswordResetEmail` → Firebase mengirim link reset ke email; pengguna membuat password baru lewat link itu. Password lama tidak pernah bisa dilihat karena disimpan dalam bentuk hash |
 | 27 | Bagaimana status "Sedang dikerjakan" bekerja? | Klik tugas → `toggleDikerjakan` menyimpan `dikerjakan: true`. Tombol Selesai → `tandaiSelesai` menyimpan `selesai: true, dikerjakan: false`. Tugas yang sedang dikerjakan selalu tampil paling atas |
+| 28 | Kenapa kotak centang tidak bisa diklik? | Kotak itu hanya penanda status (`<span>`). Tugas harus melewati alur klik tugas → Sedang dikerjakan → Selesai. Kesalahan bisa dibatalkan dengan tombol Batal selesai |
+| 29 | Algoritma apa yang dipakai untuk password? | Bawaan Firebase: scrypt dengan salt acak per akun. Hash satu arah, jadi login mencocokkan hash, bukan membuka password |
+| 30 | Apa itu glassmorphism? | Gaya desain panel seperti kaca buram: latar putih transparan (`rgba`), latar belakang dikaburkan (`backdrop-filter: blur`), dan tepi putih tipis |
+| 31 | Bagaimana website di-online-kan? | Di-hosting di Vercel sebagai situs statis (`npx vercel deploy --prod`). File yang tidak perlu ikut (catatan, rules, token) didaftarkan di `.vercelignore` |
 
 ### 9.4 Ujian terakhir: ketik ulang dari nol
 Di folder baru, coba ketik ulang **`app.js` bagian 3–6** (read, create/update, delete, toggle) tanpa melihat. Jika macet, lihat panduan ini (bukan kodenya), lalu coba lagi. Lakukan sampai lancar — ini bekal jika penguji meminta membuat fitur di tempat.
@@ -655,6 +672,7 @@ Di folder baru, coba ketik ulang **`app.js` bagian 3–6** (read, create/update,
 - [ ] Bisa menjelaskan login & register langkah demi langkah.
 - [ ] Bisa menjelaskan 10 bagian `app.js` dengan rumus "untuk apa → caranya → hasilnya".
 - [ ] Bisa menunjukkan data di Firebase Console.
-- [ ] Menyelesaikan minimal 5 dari 7 latihan modifikasi.
-- [ ] Menjawab 20 kuis tanpa melihat jawaban.
+- [ ] Bisa mendemokan alur status tugas (klik tugas → Sedang dikerjakan → Selesai) dan Sampah (Hapus → Pulihkan / Hapus Permanen).
+- [ ] Menyelesaikan minimal 5 dari 8 latihan modifikasi.
+- [ ] Menjawab 31 kuis tanpa melihat jawaban.
 - [ ] Sudah latihan demo minimal 2 kali (pakai timer 5 menit).
