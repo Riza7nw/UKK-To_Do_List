@@ -180,9 +180,11 @@ Tidak perlu hafal semua baris. Pahami **6 konsep** ini:
 
 | Konsep | Di mana | Penjelasan |
 |---|---|---|
-| Variabel CSS | `:root { --tinta: #1e3a8a; }` | Warna disimpan di satu tempat, dipakai dengan `var(--tinta)`. Ganti sekali, berubah semua |
-| Pseudo-element | `.daftar-tugas::before` | Membuat "elemen tambahan" lewat CSS saja — dipakai untuk menggambar **garis margin merah** buku tulis |
-| Gradient berulang | `repeating-linear-gradient(...)` | Menggambar pola berulang — dipakai untuk **garis-garis buku tulis** di halaman login |
+| Variabel CSS | `:root { --tinta: #1e40af; }` | Warna disimpan di satu tempat, dipakai dengan `var(--tinta)`. Ganti sekali, berubah semua |
+| Warna transparan | `rgba(255, 255, 255, .62)` | Putih dengan kejernihan 62% — dasar efek **kaca** |
+| Backdrop filter | `backdrop-filter: blur(20px)` | Mengaburkan apa pun **di belakang** panel, sehingga panel terlihat seperti kaca buram |
+| Pseudo-element | `body::before`, `body::after` | Membuat "elemen tambahan" lewat CSS saja — dipakai untuk menggambar **bulatan cahaya pagi** di latar |
+| Filter blur | `filter: blur(70px)` | Mengaburkan elemen itu sendiri — bulatan warna jadi cahaya lembut |
 | Flexbox | `.topbar`, `.tugas`, `.auth-page` | Menyusun elemen sebaris/sekolom dan menengahkan (`justify-content`, `align-items`) |
 | Grid | `.stats`, `.grid-utama`, `.toolbar` | Membuat kolom: `repeat(4, 1fr)` = 4 kolom sama lebar |
 | Class status | `.selesai`, `.tersembunyi`, `.memuat` | JS menambah/menghapus class → tampilan berubah (dicoret, disembunyikan) |
@@ -197,12 +199,16 @@ Contoh hubungan JS ↔ CSS:
 item.className = "tugas" + (t.selesai ? " selesai" : "");  // JS memberi class "selesai"
 ```
 
-**Konsep desain "buku tulis sekolah"** (bagus diceritakan ke penguji):
-- Daftar tugas tampil seperti halaman buku tulis: **garis margin merah** di kiri, **garis biru** di bawah setiap tugas.
-- Warna utama `--tinta` = biru tinta pulpen. Tugas selesai **dicoret** seperti dicoret pulpen (`text-decoration: line-through`).
-- Warna `--stabilo` kuning untuk hal penting: progress bar dan tanda "Hari ini".
-- Halaman login seperti selembar kertas bergaris.
-- Aksesibilitas: fokus keyboard terlihat (`:focus-visible`), dan animasi dimatikan untuk pengguna yang memilih *reduce motion* (`@media (prefers-reduced-motion)`).
+**Konsep desain glassmorphism "kaca jendela kelas di pagi hari"** (bagus diceritakan ke penguji):
+- **Glassmorphism** = gaya desain yang membuat panel terlihat seperti kaca buram: latar putih transparan (`rgba`), latar di belakangnya dikaburkan (`backdrop-filter: blur`), dan tepi putih tipis seperti pantulan cahaya.
+- Di belakang kaca ada tiga **cahaya pagi**: biru langit (`--langit`), peach matahari (`--pagi`), dan hijau daun (`--daun`), dibuat dari `body::before` dan `body::after` yang di-blur.
+- Hanya ada tiga tingkat kaca: panel (`--kaca`), input dan baris tugas saat di-hover (`--kaca-tipis`), dan tugas yang **sedang dikerjakan** dibuat kaca paling terang dengan tepi biru supaya menonjol.
+- Warna utama `--tinta` biru, tugas selesai **dicoret**, dan `--stabilo` kuning untuk tanda "Hari ini".
+- Aksesibilitas:
+  - Fokus keyboard terlihat (`:focus-visible`).
+  - Browser yang tidak mendukung blur memakai kaca yang lebih solid (`@supports not (backdrop-filter: ...)`), supaya teks tetap terbaca.
+  - Pengguna yang memilih *kurangi transparansi* mendapat panel putih solid (`@media (prefers-reduced-transparency: reduce)`).
+  - Animasi dimatikan untuk pengguna yang memilih *reduce motion* (`@media (prefers-reduced-motion)`).
 
 🧪 **Latihan:** ganti `--tinta` menjadi `#0f766e`, simpan, lihat seluruh warna utama berubah. Kembalikan lagi.
 ✅ **Cek paham:** Apa fungsi `@media`? Bagaimana tugas selesai bisa tercoret?

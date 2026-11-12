@@ -1,29 +1,38 @@
 /* =========================================================
-   TugasKu — Style "buku tulis sekolah"
-   Konsep: daftar tugas tampil seperti halaman buku tulis
-   (garis margin merah + garis biru), tinta pulpen biru,
-   dan stabilo kuning untuk hal yang penting hari ini.
+   TugasKu — Style "kaca jendela kelas di pagi hari" (glassmorphism)
+   Konsep: panel-panel seperti kaca buram, di belakangnya ada
+   cahaya pagi yang lembut (biru langit, peach matahari, hijau daun).
    ========================================================= */
 
 /* ---------- Variabel warna & ukuran ---------- */
 :root {
-  --kertas: #f6f8fb;        /* latar halaman */
-  --halaman: #ffffff;       /* panel */
-  --tinta: #1e3a8a;         /* warna utama: tinta pulpen biru */
-  --tinta-gelap: #172e6e;
-  --tinta-muda: #e8eefb;
-  --teks: #1f2937;          /* grafit */
-  --teks-pudar: #64748b;
-  --garis: #d9e3f1;         /* garis buku tulis */
-  --margin: #e5484d;        /* garis margin merah */
-  --stabilo: #ffe680;       /* stabilo kuning */
+  /* cahaya pagi di belakang kaca */
+  --langit: #8ec5ff;
+  --pagi: #ffc4a3;
+  --daun: #a6e3cf;
 
-  --hijau: #15803d;   --hijau-muda: #e6f4ea;
-  --kuning: #a16207;
-  --merah: #c8323a;   --merah-muda: #fdecec;
+  /* kaca */
+  --kaca: rgba(255, 255, 255, .62);          /* panel */
+  --kaca-tipis: rgba(255, 255, 255, .45);    /* input, baris hover */
+  --kaca-tepi: rgba(255, 255, 255, .75);     /* garis tepi kaca */
+  --kaca-garis: rgba(23, 37, 84, .08);       /* garis pemisah di dalam kaca */
+  --blur: blur(20px) saturate(160%);
+  --bayangan: 0 10px 40px rgba(23, 37, 84, .10);
 
+  /* teks & aksen */
+  --tinta: #1e40af;          /* warna utama */
+  --tinta-gelap: #1e3a8a;
+  --tinta-muda: rgba(30, 64, 175, .10);
+  --teks: #172554;
+  --teks-pudar: #475569;
+  --stabilo: #ffe680;
+
+  --hijau: #15803d;   --hijau-muda: rgba(21, 128, 61, .12);
+  --merah: #c8323a;   --merah-muda: rgba(200, 50, 58, .12);
+
+  --radius-besar: 20px;
   --radius: 12px;
-  --garis-tipis: 1px solid var(--garis);
+  --radius-kecil: 8px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,9 +40,30 @@
 body {
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   font-size: 15px;
-  background: var(--kertas);
-  color: var(--teks);
   line-height: 1.55;
+  color: var(--teks);
+  min-height: 100vh;
+  background: linear-gradient(160deg, #d6e8fb 0%, #eef1fb 45%, #fde9dc 100%) fixed;
+}
+
+/* Cahaya pagi: tiga bulatan warna yang dibuat buram, tetap di tempat saat scroll */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(70px);
+  pointer-events: none;
+}
+body::before {          /* biru langit, kiri atas */
+  width: 520px; height: 520px; top: -160px; left: -140px;
+  background: var(--langit); opacity: .75;
+}
+body::after {           /* peach matahari, kanan bawah + hijau daun, kanan tengah */
+  width: 560px; height: 560px; bottom: -200px; right: -160px;
+  background: var(--pagi); opacity: .8;
+  box-shadow: -260px -380px 0 -60px var(--daun);
 }
 
 h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
@@ -41,7 +71,20 @@ h2 { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; }
 a  { color: var(--tinta); font-weight: 700; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 
 /* Fokus keyboard selalu terlihat */
-:focus-visible { outline: 3px solid var(--stabilo); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--tinta); outline-offset: 2px; }
+
+/* ---------- Bahan kaca (dipakai panel-panel) ---------- */
+.kaca,
+.auth-card,
+.topbar,
+.card,
+.ringkasan {
+  background: var(--kaca);
+  border: 1px solid var(--kaca-tepi);
+  box-shadow: var(--bayangan), inset 0 1px 0 rgba(255, 255, 255, .8);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+}
 
 /* ---------- Brand ---------- */
 .brand {
@@ -50,8 +93,9 @@ a  { color: var(--tinta); font-weight: 700; text-decoration-thickness: 2px; text
 }
 .brand-icon {
   display: grid; place-items: center;
-  width: 32px; height: 32px; border-radius: 8px;
-  background: var(--tinta); color: var(--stabilo); font-size: 1rem;
+  width: 32px; height: 32px; border-radius: 10px;
+  background: var(--tinta); color: #fff; font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(30, 64, 175, .3);
 }
 
 /* ---------- Form ---------- */
@@ -62,10 +106,14 @@ label {
 input, select, textarea {
   width: 100%; padding: 11px 13px;
   font: inherit; font-size: .93rem; color: var(--teks);
-  background: var(--halaman); border: 1.5px solid var(--garis); border-radius: 8px;
-  transition: border-color .15s;
+  background: var(--kaca-tipis);
+  border: 1px solid var(--kaca-tepi); border-radius: var(--radius-kecil);
+  transition: border-color .15s, background .15s;
 }
-input:focus, select:focus, textarea:focus { outline: none; border-color: var(--tinta); }
+input::placeholder, textarea::placeholder { color: #64748b; }
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--tinta); background: rgba(255, 255, 255, .8);
+}
 input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 3px solid var(--tinta-muda); outline-offset: 0;
 }
@@ -75,22 +123,22 @@ textarea { resize: vertical; }
 
 /* ---------- Tombol ---------- */
 .btn {
-  padding: 11px 20px; border: none; border-radius: 8px;
+  padding: 11px 20px; border: none; border-radius: var(--radius-kecil);
   font: inherit; font-weight: 700; font-size: .93rem;
   cursor: pointer; transition: background .15s, transform .1s;
 }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: .6; cursor: not-allowed; }
-.btn-primary { background: var(--tinta); color: #fff; }
+.btn-primary { background: var(--tinta); color: #fff; box-shadow: 0 6px 18px rgba(30, 64, 175, .28); }
 .btn-primary:hover { background: var(--tinta-gelap); }
-.btn-ghost { background: transparent; color: var(--tinta); border: 1.5px solid var(--garis); }
-.btn-ghost:hover { border-color: var(--tinta); }
+.btn-ghost { background: var(--kaca-tipis); color: var(--tinta); border: 1px solid var(--kaca-tepi); }
+.btn-ghost:hover { background: rgba(255, 255, 255, .8); }
 .btn-block { width: 100%; margin-top: 20px; }
 
 .tersembunyi { display: none !important; }
 
 /* =========================================================
-   Halaman Login & Register — selembar kertas buku tulis
+   Halaman Login & Register
    ========================================================= */
 .auth-page {
   min-height: 100vh;
@@ -98,27 +146,15 @@ textarea { resize: vertical; }
   padding: 24px 16px;
 }
 .auth-card {
-  position: relative;
-  width: 100%; max-width: 440px;
-  padding: 40px 36px 36px 64px;           /* kiri lebih lebar: ruang margin */
-  border-radius: 6px;
-  background-color: var(--halaman);
-  /* garis-garis buku tulis */
-  background-image: repeating-linear-gradient(
-    to bottom, transparent 0 31px, var(--garis) 31px 32px
-  );
-  box-shadow: 0 1px 0 var(--garis), 0 12px 32px rgba(30, 58, 138, .08);
-}
-/* garis margin merah */
-.auth-card::before {
-  content: ""; position: absolute; top: 0; bottom: 0; left: 44px;
-  width: 2px; background: var(--margin); opacity: .55;
+  width: 100%; max-width: 420px;
+  padding: 36px 32px;
+  border-radius: var(--radius-besar);
 }
 .auth-card .brand { margin-bottom: 28px; }
-.auth-card input { background: rgba(255, 255, 255, .92); }
 .subtitle { color: var(--teks-pudar); margin-top: 6px; }
-.pesan-error { color: var(--merah); font-size: .87rem; font-weight: 600; min-height: 1.3em; margin-top: 12px; }
+.pesan-error  { color: var(--merah); font-size: .87rem; font-weight: 600; min-height: 1.3em; margin-top: 12px; }
 .pesan-sukses { color: var(--hijau); font-size: .87rem; font-weight: 600; min-height: 1.3em; margin-top: 12px; }
+.switch { margin-top: 20px; font-size: .9rem; color: var(--teks-pudar); }
 
 /* tombol "Lupa password?" tampil seperti link */
 .link-lupa {
@@ -128,7 +164,6 @@ textarea { resize: vertical; }
   text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px;
 }
 .link-lupa:disabled { opacity: .6; cursor: wait; }
-.switch { margin-top: 20px; font-size: .9rem; color: var(--teks-pudar); }
 
 /* =========================================================
    Dashboard
@@ -137,25 +172,22 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
 
 .topbar {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 32px; background: var(--halaman);
-  border-bottom: var(--garis-tipis);
-  position: sticky; top: 0; z-index: 10;
+  margin: 16px auto 0; max-width: 1120px; width: calc(100% - 48px);
+  padding: 12px 20px; border-radius: var(--radius-besar);
+  position: sticky; top: 16px; z-index: 10;
 }
 .topbar-kanan { display: flex; align-items: center; gap: 16px; }
 .sapaan { font-weight: 600; color: var(--teks-pudar); }
 
-.container { max-width: 1120px; margin: 0 auto; padding: 28px 24px 64px; }
+.container { max-width: 1120px; margin: 0 auto; padding: 24px 24px 64px; }
 
-.card {
-  background: var(--halaman); border: var(--garis-tipis);
-  border-radius: var(--radius); padding: 24px;
-}
+.card { border-radius: var(--radius-besar); padding: 24px; }
 .card h2 { margin-bottom: 4px; }
 
 /* ---------- Ringkasan: progres + statistik ---------- */
 .ringkasan {
   display: grid; grid-template-columns: 1.2fr 2fr; gap: 32px; align-items: center;
-  background: var(--halaman); border: var(--garis-tipis); border-radius: var(--radius);
+  border-radius: var(--radius-besar);
   padding: 22px 28px; margin-bottom: 24px;
 }
 .ringkasan-progres {
@@ -164,19 +196,18 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
 .ringkasan-judul { grid-column: 1 / -1; font-weight: 700; }
 .persen { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; color: var(--tinta); line-height: 1; }
 
-/* progres digambar seperti coretan stabilo */
 .progress {
-  height: 14px; border-radius: 3px; overflow: hidden;
-  background: repeating-linear-gradient(90deg, var(--garis) 0 6px, transparent 6px 10px);
+  height: 12px; border-radius: 99px; overflow: hidden;
+  background: rgba(255, 255, 255, .6); border: 1px solid var(--kaca-tepi);
 }
 .progress-bar {
-  height: 100%; width: 0;
-  background: var(--stabilo); border-right: 2px solid #e8c547;
+  height: 100%; width: 0; border-radius: 99px;
+  background: linear-gradient(90deg, var(--tinta), #3b82f6);
   transition: width .6s ease;
 }
 
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); }
-.stat { padding: 2px 18px; border-left: var(--garis-tipis); }
+.stat { padding: 2px 18px; border-left: 1px solid var(--kaca-garis); }
 .stat dt { font-size: .82rem; font-weight: 600; color: var(--teks-pudar); }
 .stat dd { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
 .stat-selesai dd   { color: var(--hijau); }
@@ -193,51 +224,46 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
 }
 .info-jumlah { font-size: .83rem; color: var(--teks-pudar); }
 
-.toolbar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+.toolbar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .toolbar input { grid-column: 1 / -1; }
 
 /* =========================================================
-   Daftar tugas — halaman buku tulis
+   Daftar tugas
    ========================================================= */
-.daftar-tugas {
-  position: relative;
-  margin: 0 -24px;          /* garis buku menyentuh tepi panel */
-  border-top: var(--garis-tipis);
-}
-/* garis margin merah */
-.daftar-tugas::before {
-  content: ""; position: absolute; top: 0; bottom: 0; left: 60px;
-  width: 2px; background: var(--margin); opacity: .45; pointer-events: none;
-}
+.daftar-tugas { display: flex; flex-direction: column; gap: 2px; }
 
 .kosong {
-  padding: 48px 24px 48px 84px;
-  color: var(--teks-pudar);
-  border-bottom: var(--garis-tipis);
+  padding: 40px 16px; text-align: center; color: var(--teks-pudar);
+  border: 1px dashed rgba(23, 37, 84, .18); border-radius: var(--radius);
 }
 
-/* satu tugas = satu baris di buku tulis */
+/* satu tugas = satu baris kaca tipis */
 .tugas {
-  display: grid; grid-template-columns: 60px 1fr auto; align-items: start;
-  padding: 14px 24px 14px 0;
-  border-bottom: var(--garis-tipis);
-  transition: background .15s;
+  display: grid; grid-template-columns: 44px 1fr auto; align-items: start;
+  padding: 14px 12px 14px 4px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  transition: background .15s, border-color .15s;
 }
-.tugas:hover { background: #fafcff; }
+.tugas:hover { background: var(--kaca-tipis); border-color: var(--kaca-tepi); }
 
-/* tombol centang di kiri margin */
+/* kotak status di kiri (hanya penanda, tidak bisa diklik) */
 .cek {
   justify-self: center; margin-top: 1px;
-  width: 24px; height: 24px; border-radius: 6px;
-  border: 2px solid #9fb2d6; background: var(--halaman);
-  color: #fff; font-weight: 800; font-size: .85rem; cursor: pointer;
+  width: 22px; height: 22px; border-radius: 7px;
+  border: 2px solid rgba(30, 64, 175, .35); background: rgba(255, 255, 255, .7);
+  color: #fff; font-weight: 800; font-size: .8rem;
   display: grid; place-items: center; transition: background .15s, border-color .15s;
-  cursor: default;            /* hanya penanda status, tidak bisa diklik */
+  cursor: default;
 }
 
-.tugas-isi { min-width: 0; padding-left: 16px; }
+.tugas-isi { min-width: 0; padding-left: 6px; }
 .tugas-isi h3 { font-size: 1rem; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
 .tugas-isi .desk { font-size: .9rem; color: var(--teks-pudar); margin-top: 2px; overflow-wrap: anywhere; }
+
+/* tugas bisa diklik untuk mulai dikerjakan */
+.tugas-isi.bisa-diklik { cursor: pointer; border-radius: var(--radius-kecil); }
+.tugas-isi.bisa-diklik:hover h3 { color: var(--tinta); }
 
 /* ---------- Label kecil di bawah judul ---------- */
 .badges { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; align-items: center; }
@@ -249,30 +275,42 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
   margin-right: 6px; vertical-align: 1px;
 }
 .badge.rendah::before { background: var(--hijau); }
-.badge.sedang::before { background: #e0a300; }
-.badge.tinggi::before { background: var(--margin); }
+.badge.sedang::before { background: #d99a00; }
+.badge.tinggi::before { background: var(--merah); }
 .badge.tinggi { color: var(--merah); }
 
-/* status penting: diberi "stabilo" */
-.badge.kuning { background: var(--stabilo); color: #5c4400; padding: 1px 6px; border-radius: 3px; }
-.badge.merah  { background: var(--merah-muda); color: var(--merah); padding: 1px 6px; border-radius: 3px; }
-.badge.hijau  { color: var(--hijau); }
+.badge.kuning  { background: var(--stabilo); color: #5c4400; padding: 1px 8px; border-radius: 99px; }
+.badge.merah   { background: var(--merah-muda); color: var(--merah); padding: 1px 8px; border-radius: 99px; }
+.badge.hijau   { color: var(--hijau); }
+.badge.progres { background: var(--tinta); color: #fff; padding: 1px 8px; border-radius: 99px; }
 
 /* ---------- Tombol aksi ---------- */
-.aksi { display: flex; gap: 4px; }
+.aksi { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
 .btn-kecil {
-  padding: 6px 10px; border-radius: 6px; border: none; background: transparent;
+  padding: 6px 10px; border-radius: var(--radius-kecil); border: none; background: transparent;
   font: inherit; font-size: .83rem; font-weight: 700; cursor: pointer;
   transition: background .15s;
 }
-.btn-edit     { color: var(--tinta); }
-.btn-hapus    { color: var(--merah); }
-.btn-pulihkan { color: var(--hijau); }
-.btn-edit:hover     { background: var(--tinta-muda); }
-.btn-hapus:hover    { background: var(--merah-muda); }
-.btn-pulihkan:hover { background: var(--hijau-muda); }
+.btn-edit          { color: var(--tinta); }
+.btn-hapus         { color: var(--merah); }
+.btn-pulihkan      { color: var(--hijau); }
+.btn-batal-selesai { color: var(--teks-pudar); }
+.btn-edit:hover          { background: var(--tinta-muda); }
+.btn-hapus:hover         { background: var(--merah-muda); }
+.btn-pulihkan:hover      { background: var(--hijau-muda); }
+.btn-batal-selesai:hover { background: rgba(255, 255, 255, .7); color: var(--teks); }
+.btn-selesai { background: var(--hijau); color: #fff; }
+.btn-selesai:hover { background: #116632; }
 
-/* ---------- Tugas selesai: dicoret pulpen ---------- */
+/* ---------- Tugas sedang dikerjakan: kaca lebih terang + tepi tinta ---------- */
+.tugas.dikerjakan {
+  background: rgba(255, 255, 255, .78);
+  border-color: rgba(30, 64, 175, .35);
+  box-shadow: 0 6px 20px rgba(30, 64, 175, .12);
+}
+.tugas.dikerjakan .cek { border-color: var(--tinta); border-style: dashed; }
+
+/* ---------- Tugas selesai ---------- */
 .tugas.selesai h3 {
   color: var(--teks-pudar);
   text-decoration: line-through; text-decoration-color: var(--tinta); text-decoration-thickness: 2px;
@@ -286,23 +324,8 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
   100% { transform: scale(1); }
 }
 
-/* ---------- Tugas bisa diklik untuk mulai dikerjakan ---------- */
-.tugas-isi.bisa-diklik { cursor: pointer; border-radius: 6px; }
-.tugas-isi.bisa-diklik:hover h3 { color: var(--tinta); }
-
-/* ---------- Tugas sedang dikerjakan ---------- */
-.tugas.dikerjakan { background: #f2f6ff; }
-.tugas.dikerjakan:hover { background: #ecf2ff; }
-.tugas.dikerjakan .cek { border-color: var(--tinta); border-style: dashed; }
-.badge.progres { background: var(--tinta); color: #fff; padding: 1px 7px; border-radius: 3px; }
-
-.btn-selesai { background: var(--hijau); color: #fff; }
-.btn-selesai:hover { background: #116632; }
-.btn-batal-selesai { color: var(--teks-pudar); }
-.btn-batal-selesai:hover { background: #eef2f7; color: var(--teks); }
-
 /* ---------- Tugas di sampah ---------- */
-.tugas.dihapus { background: repeating-linear-gradient(135deg, transparent 0 10px, #f8fafc 10px 20px); }
+.tugas.dihapus { border: 1px dashed rgba(23, 37, 84, .2); opacity: .8; }
 .tugas.dihapus h3 { color: var(--teks-pudar); }
 .tugas.dihapus .cek { visibility: hidden; }
 
@@ -310,26 +333,28 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
 .paginasi { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 20px; }
 .paginasi:empty { display: none; }
 .btn-halaman {
-  min-width: 38px; padding: 7px 12px; border-radius: 6px;
-  border: 1.5px solid var(--garis); background: var(--halaman); color: var(--teks);
+  min-width: 38px; padding: 7px 12px; border-radius: var(--radius-kecil);
+  border: 1px solid var(--kaca-tepi); background: var(--kaca-tipis); color: var(--teks);
   font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer;
 }
-.btn-halaman:hover:not(:disabled) { border-color: var(--tinta); color: var(--tinta); }
+.btn-halaman:hover:not(:disabled) { background: rgba(255, 255, 255, .85); color: var(--tinta); }
 .btn-halaman.aktif { background: var(--tinta); border-color: var(--tinta); color: #fff; }
-.btn-halaman:disabled { opacity: .4; cursor: not-allowed; }
+.btn-halaman:disabled { opacity: .45; cursor: not-allowed; }
 
-/* ---------- Toast (notifikasi) ---------- */
+/* ---------- Toast (notifikasi): kaca gelap ---------- */
 .toast {
   position: fixed; bottom: 24px; left: 50%;
   transform: translateX(-50%) translateY(120px);
   max-width: calc(100% - 32px);
-  background: var(--tinta); color: #fff; padding: 12px 20px;
-  border-radius: 8px; font-size: .9rem; font-weight: 600;
-  box-shadow: 0 10px 30px rgba(30, 58, 138, .25);
+  background: rgba(23, 37, 84, .82); color: #fff; padding: 12px 20px;
+  border: 1px solid rgba(255, 255, 255, .2); border-radius: var(--radius);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  font-size: .9rem; font-weight: 600;
+  box-shadow: 0 10px 30px rgba(23, 37, 84, .3);
   opacity: 0; transition: transform .25s ease, opacity .25s ease; z-index: 100;
 }
 .toast.tampil { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast.error  { background: var(--merah); }
+.toast.error  { background: rgba(200, 50, 58, .9); }
 
 /* =========================================================
    Responsif (HP & tablet)
@@ -340,7 +365,7 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
   .stat:first-child { border-left: none; padding-left: 0; }
 }
 @media (max-width: 640px) {
-  .topbar { padding: 12px 16px; }
+  .topbar { width: calc(100% - 32px); padding: 10px 14px; top: 10px; margin-top: 10px; }
   .sapaan { display: none; }
   .container { padding: 16px 16px 48px; }
   .card { padding: 20px 16px; }
@@ -349,17 +374,30 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
   .stat:nth-child(3) { border-left: none; padding-left: 0; }
   .toolbar { grid-template-columns: 1fr 1fr; }
   .toolbar #urutkan { grid-column: 1 / -1; }
-  .daftar-tugas { margin: 0 -16px; }
-  .daftar-tugas::before { left: 48px; }
-  .tugas { grid-template-columns: 48px 1fr; padding-right: 16px; }
-  .aksi { grid-column: 2; padding-left: 10px; margin-top: 6px; }
-  .tugas-isi { padding-left: 14px; }
-  .kosong { padding-left: 64px; }
-  .auth-card { padding: 32px 22px 28px 52px; }
-  .auth-card::before { left: 34px; }
+  .tugas { grid-template-columns: 36px 1fr; }
+  .aksi { grid-column: 2; justify-content: flex-start; margin-top: 6px; }
+  .auth-card { padding: 28px 22px; }
+  body::before { width: 320px; height: 320px; }
+  body::after  { width: 340px; height: 340px; }
 }
 
-/* Hormati pengguna yang mematikan animasi */
+/* =========================================================
+   Aksesibilitas & dukungan browser
+   ========================================================= */
+
+/* Browser tanpa dukungan blur: kaca dibuat lebih solid agar teks tetap terbaca */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .auth-card, .topbar, .card, .ringkasan { background: rgba(255, 255, 255, .9); }
+}
+
+/* Pengguna yang memilih "kurangi transparansi" */
+@media (prefers-reduced-transparency: reduce) {
+  .auth-card, .topbar, .card, .ringkasan {
+    background: #ffffff; -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+}
+
+/* Pengguna yang mematikan animasi */
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }

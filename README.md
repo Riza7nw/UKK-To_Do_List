@@ -1,7 +1,7 @@
 # TugasKu — Website To-Do List
 
 Website pencatat tugas untuk pelajar, dibuat sebagai proyek **UKK (Uji Kompetensi Keahlian)**.
-Tampilannya terinspirasi dari **buku tulis sekolah**: garis margin merah, tinta biru, tugas selesai dicoret, dan stabilo kuning untuk tugas hari ini.
+Tampilannya bergaya **glassmorphism** dengan konsep *kaca jendela kelas di pagi hari*: panel kaca buram di atas cahaya pagi berwarna biru langit, peach, dan hijau daun.
 
 🔗 **Demo:** https://tugasku-ukk.vercel.app
 
