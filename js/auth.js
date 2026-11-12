@@ -5,6 +5,7 @@ import { auth, db } from "./firebase.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
@@ -15,6 +16,7 @@ import {
 const pesan = document.getElementById("pesan");
 const formLogin = document.getElementById("formLogin");         // hanya ada di index.html
 const formRegister = document.getElementById("formRegister");   // hanya ada di register.html
+const btnLupa = document.getElementById("btnLupa");             // hanya ada di index.html
 
 // ---------------- Jika sudah login, langsung ke dashboard ----------------
 // "sedangProses" mencegah pindah halaman sebelum data register selesai disimpan.
@@ -32,6 +34,7 @@ function pesanError(kode) {
   const daftar = {
     "auth/email-already-in-use": "Email sudah terdaftar, silakan login.",
     "auth/invalid-email": "Format email tidak valid.",
+    "auth/missing-email": "Isi email dulu.",
     "auth/weak-password": "Password minimal 6 karakter.",
     "auth/invalid-credential": "Email atau password salah.",
     "auth/user-not-found": "Email atau password salah.",
@@ -59,6 +62,7 @@ function setLoading(form, loading, teks) {
 if (formLogin !== null) {
   formLogin.addEventListener("submit", async (e) => {
     e.preventDefault();   // cegah halaman reload
+    pesan.className = "pesan-error";
     pesan.textContent = "";
 
     const email = document.getElementById("email").value.trim();
@@ -75,6 +79,43 @@ if (formLogin !== null) {
       pesan.textContent = pesanError(err.code);
       setLoading(formLogin, false, "Masuk");
     }
+  });
+}
+
+// =========================================================
+// LUPA PASSWORD
+// Firebase mengirim link reset ke email yang diisi di kolom Email.
+// Pengguna klik link itu, lalu membuat password baru.
+// =========================================================
+if (btnLupa !== null) {
+  btnLupa.addEventListener("click", async () => {
+    pesan.className = "pesan-error";
+    pesan.textContent = "";
+
+    const email = document.getElementById("email").value.trim();
+    if (email === "") {
+      pesan.textContent = "Isi email dulu, lalu klik Lupa password.";
+      return;
+    }
+
+    btnLupa.disabled = true;
+    btnLupa.textContent = "Mengirim...";
+
+    try {
+      auth.languageCode = "id";   // email reset dalam Bahasa Indonesia
+      await sendPasswordResetEmail(auth, email);
+
+      // Pesan dibuat sama untuk email terdaftar maupun tidak,
+      // supaya orang lain tidak bisa menebak email mana yang punya akun.
+      pesan.className = "pesan-sukses";
+      pesan.textContent = "Jika " + email + " terdaftar, link reset password sudah dikirim. "
+                        + "Cek Inbox dan folder Spam.";
+    } catch (err) {
+      pesan.textContent = pesanError(err.code);
+    }
+
+    btnLupa.disabled = false;
+    btnLupa.textContent = "Lupa password?";
   });
 }
 

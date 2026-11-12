@@ -260,7 +260,24 @@ user klik Masuk
        gagal    → catch: sedangProses = false, tampilkan pesanError, tombol kembali "Masuk"
 ```
 
-### 5.6 Register
+### 5.6 Lupa password
+Tombol **"Lupa password?"** di halaman login (`#btnLupa`, `type="button"` agar tidak ikut men-submit form login):
+```
+user isi email lalu klik "Lupa password?"
+  → email kosong? → tampilkan "Isi email dulu", return
+  → tombol jadi "Mengirim..." (disabled)
+  → auth.languageCode = "id"                      (email reset dalam Bahasa Indonesia)
+  → await sendPasswordResetEmail(auth, email)     (Firebase yang mengirim email)
+       berhasil → pesan hijau: "Jika ... terdaftar, link reset sudah dikirim. Cek Inbox dan Spam."
+       gagal    → catch: tampilkan pesanError (misal format email salah)
+  → tombol kembali "Lupa password?"
+```
+- Pengguna membuka email, klik link-nya, lalu membuat password baru di halaman milik Firebase.
+- **Kenapa pesannya "Jika ... terdaftar"?** Supaya orang lain tidak bisa menebak email mana yang punya akun. Firebase juga sengaja tidak memberi error untuk email yang tidak terdaftar.
+- Email reset sering masuk **Spam** karena dikirim dari domain bawaan `firebaseapp.com`.
+- Pesan sukses memakai class `pesan-sukses` (hijau); saat login, class dikembalikan ke `pesan-error` (merah).
+
+### 5.7 Register
 ```
 user klik Daftar
   → e.preventDefault()
@@ -602,6 +619,7 @@ Contoh untuk toggle:
 | 23 | Bagaimana ID tugas bisa 0001, 0002? | Nomor terakhir disimpan di `users/{uid}.nomorTerakhir`; saat tambah, dibaca +1 dalam `runTransaction`, lalu `padStart(4,"0")` dijadikan ID dokumen |
 | 24 | Kenapa ada fungsi bantu seperti `buatElemen`, `aturModeForm`, `setLoading`? | Prinsip DRY (Don't Repeat Yourself): kode yang sama ditulis sekali sebagai fungsi, lalu dipakai berulang → tidak perlu menulis ulang & mudah diperbaiki |
 | 25 | Bagaimana fitur Sampah bekerja? | Soft delete: Hapus hanya mengubah field `dihapus: true` (data tetap di Firestore). Pulihkan → `dihapus: false`. Hapus Permanen → `deleteDoc` (data hilang) |
+| 26 | Bagaimana fitur Lupa password bekerja? | `sendPasswordResetEmail` → Firebase mengirim link reset ke email; pengguna membuat password baru lewat link itu. Password lama tidak pernah bisa dilihat karena disimpan dalam bentuk hash |
 
 ### 9.4 Ujian terakhir: ketik ulang dari nol
 Di folder baru, coba ketik ulang **`app.js` bagian 3–6** (read, create/update, delete, toggle) tanpa melihat. Jika macet, lihat panduan ini (bukan kodenya), lalu coba lagi. Lakukan sampai lancar — ini bekal jika penguji meminta membuat fitur di tempat.
