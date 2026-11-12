@@ -292,7 +292,7 @@ function diSampah(t) {
 // 6. STATUS TUGAS: Belum → Sedang dikerjakan → Selesai
 // =========================================================
 
-// Centang di kiri: langsung selesai / batal selesai
+// Tombol "Batal selesai": tugas kembali menjadi belum selesai
 async function toggleSelesai(id, statusSekarang) {
   try {
     await updateDoc(dokumenTugas(id), {
@@ -573,16 +573,20 @@ function buatItemTugas(t) {
   }
   const item = buatElemen("div", kelasKartu, "");
 
-  // Tombol centang
+  // Kotak centang: HANYA penanda status, tidak bisa diklik.
+  // Tercentang otomatis setelah tombol "Selesai" diklik.
   let tandaCentang = "";
-  let keterangan = "Tandai selesai";
+  let keterangan = "Belum selesai";
   if (t.selesai) {
     tandaCentang = "✓";
-    keterangan = "Tandai belum selesai";
+    keterangan = "Selesai";
+  } else if (sedangDikerjakan(t)) {
+    keterangan = "Sedang dikerjakan";
   }
-  const cek = buatElemen("button", "cek", tandaCentang);
+  const cek = buatElemen("span", "cek", tandaCentang);
   cek.title = keterangan;
-  cek.addEventListener("click", () => toggleSelesai(t.id, t.selesai));
+  cek.setAttribute("role", "img");
+  cek.setAttribute("aria-label", keterangan);
 
   // Isi: judul & deskripsi
   const isi = buatElemen("div", "tugas-isi", "");
@@ -649,6 +653,13 @@ function buatItemTugas(t) {
       const btnSelesai = buatElemen("button", "btn-kecil btn-selesai", "Selesai");
       btnSelesai.addEventListener("click", () => tandaiSelesai(t.id));
       aksi.appendChild(btnSelesai);
+    }
+
+    // Tugas yang sudah selesai: bisa dibatalkan jika salah tandai
+    if (t.selesai) {
+      const btnBatalSelesai = buatElemen("button", "btn-kecil btn-batal-selesai", "Batal selesai");
+      btnBatalSelesai.addEventListener("click", () => toggleSelesai(t.id, true));
+      aksi.appendChild(btnBatalSelesai);
     }
 
     // Tugas biasa: Edit & Hapus (pindah ke sampah)

@@ -232,8 +232,8 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
   border: 2px solid #9fb2d6; background: var(--halaman);
   color: #fff; font-weight: 800; font-size: .85rem; cursor: pointer;
   display: grid; place-items: center; transition: background .15s, border-color .15s;
+  cursor: default;            /* hanya penanda status, tidak bisa diklik */
 }
-.cek:hover { border-color: var(--tinta); }
 
 .tugas-isi { min-width: 0; padding-left: 16px; }
 .tugas-isi h3 { font-size: 1rem; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
@@ -298,6 +298,8 @@ body.memuat .app { visibility: hidden; }   /* sembunyikan sampai login dicek */
 
 .btn-selesai { background: var(--hijau); color: #fff; }
 .btn-selesai:hover { background: #116632; }
+.btn-batal-selesai { color: var(--teks-pudar); }
+.btn-batal-selesai:hover { background: #eef2f7; color: var(--teks); }
 
 /* ---------- Tugas di sampah ---------- */
 .tugas.dihapus { background: repeating-linear-gradient(135deg, transparent 0 10px, #f8fafc 10px 20px); }

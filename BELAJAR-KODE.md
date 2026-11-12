@@ -440,7 +440,9 @@ Setiap tugas punya dua field status: `selesai` dan `dikerjakan` (keduanya `true`
 |---|---|---|
 | **Klik judul/deskripsi tugas** (atau tekan Enter) | `toggleDikerjakan(id, statusSekarang)` | `dikerjakan: !statusSekarang` → mulai / batal dikerjakan |
 | Klik tombol hijau **Selesai** (muncul saat sedang dikerjakan) | `tandaiSelesai(id)` | `selesai: true`, `dikerjakan: false` |
-| Klik **kotak centang** di kiri | `toggleSelesai(id, statusSekarang)` | `selesai: !statusSekarang`, `dikerjakan: false` |
+| Klik tombol **Batal selesai** (muncul pada tugas yang sudah selesai) | `toggleSelesai(id, true)` | `selesai: false`, `dikerjakan: false` |
+
+**Kotak centang di kiri hanya penanda status**, tidak bisa diklik manual (elemen `<span>`, bukan `<button>`). Kotak itu otomatis tercentang setelah tombol **Selesai** diklik. Jadi alurnya selalu: klik tugas → Sedang dikerjakan → Selesai.
 
 ```js
 await updateDoc(dokumenTugas(id), {
@@ -522,7 +524,7 @@ const potongan = list.slice(awal, awal + PER_HALAMAN);        // ambil 5 tugas s
 
 **`buatItemTugas(t)`** membuat satu kartu tugas, urut dari atas:
 1. Kartu `div.tugas` + class prioritas, ditambah class `selesai` jika selesai.
-2. Tombol centang → `toggleSelesai`.
+2. Kotak centang (`<span>`, hanya penanda): berisi ✓ jika selesai; `aria-label` berisi status tugas untuk pembaca layar.
 3. Isi: judul (`h3`) dan deskripsi (jika ada).
 4. Badge, masing-masing dengan `if`: Terlambat / Hari ini, prioritas, kategori, tanggal (jika ada), Selesai (jika selesai).
 5. Tombol Edit → `mulaiEdit`, tombol Hapus → `hapusTugas`.
